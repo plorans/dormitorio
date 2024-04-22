@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <title>Cuartos</title>
+    <link th:href="@{https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+    <link th:href="@{https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css}"
+        rel="stylesheet" />
+    <script th:src="@{https://code.jquery.com/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{https://use.fontawesome.com/releases/v6.3.0/js/all.js}" crossorigin="anonymous"></script>
+</head>
+
+<body class="sb-nav-fixed">
+    <div th:replace="~{fragments/navbar}"></div>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <div th:replace="~{fragments/sidebar}"></div>
+        </div>
+        <div id="layoutSidenav_content">
+
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Pasillo [[${pasillo}]]</h1>
+
+                    <div class="row">
+                        <div class="col-md-11">
+                            <ol class="breadcrumb mb-4">
+                                <li class="breadcrumb-item"><a href="/dormitorio/inicio">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Cuartos</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="row justify-content-left px-3">
+                                <!-- Botón "Nuevo" -->
+                                <div class="col-md-4 mb-4">
+                                    <button class="btn btn-primary btn-block"
+                                        onclick="saveModal('saveModal')">Nuevo</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <!-- Usamos th:if para verificar si hay cuartos disponibles -->
+                            <div class="col-md-4 mb-4" th:if="${not #lists.isEmpty(listaCuarto)}"
+                                th:each="cuarto : ${listaCuarto}">
+                                <div class="card position-relative">
+                                    <!-- Botón de edición -->
+                                    <div class="card-body">
+                                        <!-- Mostramos el número de la tarjeta -->
+                                        <div class="row">
+                                            <div class="col-md-8 mb-0">
+                                                <h3 class="card-title bg-primary text-white rounded p-2"
+                                                    th:text="'Cuarto ' + ${cuarto.numero}"></h3>
+                                            </div>
+                                            <div class="col-md-2 mb-0 px-0">
+                                                <button type="button" class="btn btn-primary btn-lg edit-button"
+                                                    th:attr="data-residente1=${cuarto.residente1?.matricula}, data-residente2=${cuarto.residente2?.matricula}, data-residente3=${cuarto.residente3?.matricula}, data-residente4=${cuarto.residente4?.matricula}, data-cuarto-id=${cuarto.id}"
+                                                    onclick="editModal('editModal', this)">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                            </div>
+                                            <div class="col-md-2 mb-0 px-0">
+                                                <button class="btn btn-danger btn-lg"
+                                                    th:attr="data-cuartoNumero=${cuarto.id}"
+                                                    onclick="deleteCuarto('deleteForm',this)">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+
+
+                                            </div>
+                                        </div>
+
+
+                                        <p class="card-text">
+                                        <ul class="list-group">
+                                            <li class="list-group-item" th:if="${cuarto.residente1 != null}">
+                                                <div class="row">
+                                                    <div class="col"><span th:text="${cuarto.residente1.nombre}"></span>
+                                                    </div>
+                                                    <div class="col"><span
+                                                            th:text="${cuarto.residente1.matricula}"></span></div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item" th:if="${cuarto.residente2 != null}">
+                                                <div class="row">
+                                                    <div class="col"><span th:text="${cuarto.residente2.nombre}"></span>
+                                                    </div>
+                                                    <div class="col"><span
+                                                            th:text="${cuarto.residente2.matricula}"></span></div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item" th:if="${cuarto.residente3 != null}">
+                                                <div class="row">
+                                                    <div class="col"><span th:text="${cuarto.residente3.nombre}"></span>
+                                                    </div>
+                                                    <div class="col"><span
+                                                            th:text="${cuarto.residente3.matricula}"></span></div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item" th:if="${cuarto.residente4 != null}">
+                                                <div class="row">
+                                                    <div class="col"><span th:text="${cuarto.residente4.nombre}"></span>
+                                                    </div>
+                                                    <div class="col"><span
+                                                            th:text="${cuarto.residente4.matricula}"></span></div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Manejar el caso en que no haya cuartos disponibles -->
+                            <div class="col-md-12 text-center" th:if="${#lists.isEmpty(listaCuarto)}">
+                                <h3>No hay cuartos disponibles en este momento</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Editar Residentes</h5>
+                </div>
+                <form id="editForm" th:action="@{/dormitorio/pasillo/cuarto}" method="post">
+
+                    <div class="modal-body">
+
+                        <div class="row py-1">
+                            <div class="col"><input type="hidden"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'pasilloTmp'}" field="pasilloTmp" name="pasilloTmp" th:value="${pasillo}">
+                            </div>
+                        </div>
+
+                        <div class="row py-1">
+                            <div class="col"><input type="hidden"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'cuartoId'}" field="id" name="id"></div>
+                        </div>
+                        <div class="row py-1 ">
+                            <div class="col text-center"><label th:for="${'residente1'}">Residente 1</label></div>
+                            <div class="col"><input type="text"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'residente1'}" field="residente1Tmp" name="residente1Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente2'}">Residente 2</label></div>
+                            <div class="col"><input type="text"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'residente2'}" field="residente2Tmp" name="residente2Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente3'}">Residente 3</label></div>
+                            <div class="col"><input type="text"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'residente3'}" field="residente3Tmp" name="residente3Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente4'}">Residente 4</label></div>
+                            <div class="col"><input type="text"
+                                    th:placeholder="${residente == null} ? '' : #{residente.placeholder}"
+                                    th:id="${'residente4'}" field="residente4Tmp" name="residente4Tmp"></div>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="saveModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveModalLabel">Nuevo Cuarto</h5>
+                </div>
+                <form id="secondForm" th:action="@{/dormitorio/pasillo/cuarto/save}" method="post">
+
+                    <div class="modal-body">
+
+                        <div class="row py-1">
+                            <div class="col"><input type="hidden" th:id="${'pasilloTmp'}" field="pasilloTmp"
+                                    name="pasilloTmp" th:value="${pasillo}"></div>
+                        </div>
+
+                        <div class="row py-1">
+                            <div class="col"><input type="hidden" th:id="${'cuartoId'}" field="id" name="id"></div>
+                        </div>
+
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'numero'}">No. Cuarto</label></div>
+                            <div class="col"><input type="text" th:id="${'numero'}" field="numero" name="numero"></div>
+                        </div>
+
+                        <div class="row py-1 ">
+                            <div class="col text-center"><label th:for="${'residente1'}">Residente 1</label></div>
+                            <div class="col"><input type="text" th:id="${'residente1'}" field="residente1Tmp"
+                                    name="residente1Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente2'}">Residente 2</label></div>
+                            <div class="col"><input type="text" th:id="${'residente2'}" field="residente2Tmp"
+                                    name="residente2Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente3'}">Residente 3</label></div>
+                            <div class="col"><input type="text" th:id="${'residente3'}" field="residente3Tmp"
+                                    name="residente3Tmp"></div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col text-center"><label th:for="${'residente4'}">Residente 4</label></div>
+                            <div class="col"><input type="text" th:id="${'residente4'}" field="residente4Tmp"
+                                    name="residente4Tmp"></div>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+
+    <form id="deleteForm" th:action="@{cuarto/delete}" method="post">
+        <input type="hidden" th:id="cuartoId" th:name="cuartoId" value="#{residente.placeholder}">
+        <input type="hidden" th:csrf />
+        <!-- Agrega más campos si es necesario -->
+    </form>
+
+
+
+    <script th:src="@{https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js}"
+        crossorigin="anonymous"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+    <script th:src="@{https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js}"
+        crossorigin="anonymous"></script>
+    <script th:src="@{https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js}"
+        crossorigin="anonymous"></script>
+    <script th:src="@{/js/datatables-simple-demo.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+
+    <script>
+        function editModal(modalId, button) {
+            var residente1 = button.getAttribute('data-residente1');
+            var residente2 = button.getAttribute('data-residente2');
+            var residente3 = button.getAttribute('data-residente3');
+            var residente4 = button.getAttribute('data-residente4');
+            var cuartoId = button.getAttribute('data-cuarto-id');
+
+
+            // Mostrar el modal
+            var modal = document.getElementById(modalId);
+
+            // Establecer valores de residentes en el modal
+            modal.querySelector('#residente1').value = residente1;
+            modal.querySelector('#residente2').value = residente2;
+            modal.querySelector('#residente3').value = residente3;
+            modal.querySelector('#residente4').value = residente4;
+            modal.querySelector('#cuartoId').value = cuartoId;
+
+            // Mostrar el modal
+            var bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+        }
+
+        function saveModal(modalId) {
+            var modal = document.getElementById(modalId); // Obtener el modal por ID
+            var bootstrapModal = new bootstrap.Modal(modal);
+
+
+            bootstrapModal.show();
+        }
+
+        function deleteCuarto(formId, button) {
+            console.log("fid: " + formId);
+
+            var cuarto = button.getAttribute('data-cuartoNumero');
+            console.log("id: " + cuarto);
+
+            // Mostrar Sweet Alert antes de enviar el formulario
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará el registro. ¿Deseas continuar?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.getElementById(formId);
+                    form.querySelector('#cuartoId').value = cuarto;
+
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
